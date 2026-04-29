@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +16,7 @@
     
     <script>
         tailwind.config = {
+            darkMode: 'class', 
             theme: {
                 extend: {
                     colors: {
@@ -25,6 +26,11 @@
                             purple: '#e6e6fa',
                             text: '#4a4a4a',
                             accent: '#d4a5a5'
+                        },
+                        night: {
+                            bg1: '#0b0f19',
+                            bg2: '#1a1b41',
+                            card: 'rgba(30, 41, 59, 0.6)'
                         }
                     },
                     fontFamily: {
@@ -41,23 +47,36 @@
             background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             color: #4a4a4a;
             overflow-x: hidden;
-            scroll-behavior: smooth;
+            transition: background 0.8s ease, color 0.8s ease;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0b0f19 0%, #1a1b41 100%);
+            color: #e2e8f0;
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d4a5a5; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #6366f1; }
 
-        /* Soft Floating Shapes Background */
+        /* Floating Shapes / Stars */
         .shape {
             position: fixed;
             border-radius: 50%;
             background: linear-gradient(135deg, rgba(230, 230, 250, 0.4), rgba(244, 213, 213, 0.4));
-            animation: floatUp 15s infinite linear;
+            animation: floatUp infinite linear;
             z-index: 0;
             pointer-events: none;
             backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
+        }
+
+        .dark .shape {
+            background: white;
+            backdrop-filter: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
 
         @keyframes floatUp {
@@ -76,10 +95,21 @@
             transition: all 0.4s ease;
         }
 
+        .dark .elegant-card {
+            background: var(--tw-colors-night-card);
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
         .elegant-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
             background: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark .elegant-card:hover {
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
         }
 
         /* Minimalist Envelope */
@@ -97,9 +127,11 @@
             position: relative;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            transition: transform 0.5s;
+            transition: transform 0.5s, background 0.5s;
             z-index: 10;
         }
+
+        .dark .envelope { background: #2d2a3d; }
 
         .envelope-flap {
             position: absolute;
@@ -111,9 +143,11 @@
             border-right: 150px solid transparent;
             border-top: 100px solid #dfc2c2;
             transform-origin: top;
-            transition: transform 0.6s ease-in-out;
+            transition: transform 0.6s ease-in-out, border-top-color 0.5s;
             z-index: 3;
         }
+
+        .dark .envelope-flap { border-top-color: #232130; }
 
         .envelope-pocket {
             position: absolute;
@@ -125,7 +159,14 @@
             border-right: 150px solid #dcbaba;
             border-bottom: 100px solid #d4a5a5;
             border-radius: 0 0 8px 8px;
+            transition: border-color 0.5s;
             z-index: 2;
+        }
+
+        .dark .envelope-pocket {
+            border-left-color: #282536;
+            border-right-color: #282536;
+            border-bottom-color: #3b3754;
         }
 
         .letter {
@@ -139,13 +180,19 @@
             padding: 20px;
             color: #555;
             text-align: center;
-            transition: transform 0.8s ease-in-out;
+            transition: transform 0.8s ease-in-out, background 0.5s;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             z-index: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid #f0e6e6;
+        }
+
+        .dark .letter {
+            background: #0f172a;
+            border-color: #1e293b;
+            color: #cbd5e1;
         }
 
         .envelope-wrapper.open .envelope-flap {
@@ -169,24 +216,81 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Timeline Dots */
+        .timeline-dot {
+            transition: all 0.3s ease;
+        }
+        .group:hover .timeline-dot {
+            transform: scale(1.3);
+            background-color: #d4a5a5;
+        }
+        .dark .group:hover .timeline-dot {
+            background-color: #6366f1;
+        }
     </style>
 </head>
-<body class="antialiased relative font-sans">
+<body class="antialiased relative font-sans transition-colors duration-500">
 
-    <!-- Background Shapes Container -->
+    <!-- Reliable Audio File (Chopin Nocturne) -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Chopin_-_Nocturne_Op_9_No_2_%28E_Flat_Major%29.ogg" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Floating Buttons -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        <!-- Music Button -->
+        <button id="music-btn" onclick="toggleMusic()" class="w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-pastel-accent dark:text-pink-400 hover:scale-110 transition-transform">
+            <i id="music-icon" class="fa-solid fa-music"></i>
+        </button>
+        <!-- Night Mode Button -->
+        <button id="theme-btn" onclick="toggleTheme()" class="w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-indigo-500 hover:scale-110 transition-transform">
+            <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+    </div>
+
+    <!-- Background Shapes/Stars -->
     <div id="shapes-container" class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none"></div>
 
     <!-- Hero Section -->
-    <section class="min-h-screen flex flex-col justify-center items-center relative z-10 px-6">
+    <section class="min-h-screen flex flex-col justify-center items-center relative z-10 px-6 pt-20">
         <div class="text-center reveal active max-w-2xl mx-auto">
-            <span class="text-sm md:text-base text-pastel-accent tracking-widest uppercase font-medium mb-4 block">Just a little something</span>
-            <h1 class="text-5xl md:text-7xl font-serif text-gray-800 mb-6 italic">Hey, Naren.</h1>
-            <p class="text-base md:text-lg text-gray-500 mb-10 leading-relaxed font-light">
+            <span class="text-sm md:text-base text-pastel-accent dark:text-pink-400 tracking-widest uppercase font-medium mb-4 block">Just a little something</span>
+            <h1 class="text-5xl md:text-7xl font-serif text-gray-800 dark:text-white mb-6 italic transition-colors">Hey, Naren.</h1>
+            <p class="text-base md:text-lg text-gray-500 dark:text-gray-300 mb-8 leading-relaxed font-light transition-colors">
                 I made this tiny space on the internet just to bring a smile to your face today. No special occasion, just appreciating you.
             </p>
             
-            <a href="#appreciate" class="inline-flex items-center px-8 py-3 bg-white text-gray-700 border border-gray-200 rounded-full hover:bg-gray-50 transition duration-300 shadow-sm hover:shadow-md text-sm font-medium">
-                Explore <i class="fa-solid fa-arrow-down ml-3 text-pastel-accent animate-bounce"></i>
+            <!-- Love Counter -->
+            <div class="elegant-card rounded-2xl p-6 mb-10 inline-block mx-auto">
+                <p class="text-sm text-gray-400 dark:text-gray-400 mb-3 uppercase tracking-wider font-medium">Our Beautiful Time Together</p>
+                <div class="flex items-center justify-center gap-4 text-gray-700 dark:text-gray-200" dir="ltr">
+                    <div class="text-center">
+                        <span id="days" class="text-3xl md:text-4xl font-serif text-pastel-accent dark:text-indigo-400 block">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Days</span>
+                    </div>
+                    <span class="text-2xl font-light mb-4 text-gray-300 dark:text-gray-600">:</span>
+                    <div class="text-center">
+                        <span id="hours" class="text-3xl md:text-4xl font-serif text-pastel-accent dark:text-indigo-400 block">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Hours</span>
+                    </div>
+                    <span class="text-2xl font-light mb-4 text-gray-300 dark:text-gray-600">:</span>
+                    <div class="text-center">
+                        <span id="minutes" class="text-3xl md:text-4xl font-serif text-pastel-accent dark:text-indigo-400 block">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Mins</span>
+                    </div>
+                    <span class="text-2xl font-light mb-4 text-gray-300 dark:text-gray-600">:</span>
+                    <div class="text-center">
+                        <span id="seconds" class="text-3xl md:text-4xl font-serif text-pastel-accent dark:text-indigo-400 block">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Secs</span>
+                    </div>
+                </div>
+            </div>
+            
+            <br>
+            <a href="#appreciate" class="inline-flex items-center px-8 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-300 shadow-sm hover:shadow-md text-sm font-medium">
+                Explore <i class="fa-solid fa-arrow-down ml-3 text-pastel-accent dark:text-indigo-400 animate-bounce"></i>
             </a>
         </div>
     </section>
@@ -194,80 +298,116 @@
     <!-- Traits Section -->
     <section id="appreciate" class="py-20 relative z-10 px-6 max-w-6xl mx-auto">
         <div class="text-center mb-16 reveal">
-            <h2 class="text-3xl md:text-4xl font-serif text-gray-800 mb-4">Things I Appreciate</h2>
-            <div class="w-16 h-1 bg-pastel-accent mx-auto rounded-full opacity-50"></div>
+            <h2 class="text-3xl md:text-4xl font-serif text-gray-800 dark:text-white mb-4 transition-colors">Things I Appreciate</h2>
+            <div class="w-16 h-1 bg-pastel-accent dark:bg-indigo-500 mx-auto rounded-full opacity-50 transition-colors"></div>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Card 1 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group">
-                <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-pink-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-pink-400 group-hover:scale-110 transition-transform">
                     <i class="fa-regular fa-face-smile text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Your Vibe</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">You have this incredibly calming and positive energy that just makes everything better when you're around.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Your Vibe</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">You have this incredibly calming and positive energy that just makes everything better when you're around.</p>
             </div>
 
             <!-- Card 2 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group" style="transition-delay: 100ms;">
-                <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-purple-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-indigo-400 group-hover:scale-110 transition-transform">
                     <i class="fa-regular fa-star text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Your Mind</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">I love talking to you. Your perspective on things is always unique, smart, and refreshing to listen to.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Your Mind</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">I love talking to you. Your perspective on things is always unique, smart, and refreshing to listen to.</p>
             </div>
 
             <!-- Card 3 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group" style="transition-delay: 200ms;">
-                <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-pink-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-pink-400 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-leaf text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Your Kindness</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">The genuine way you care about the people around you is something I truly admire about you.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Your Kindness</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">The genuine way you care about the people around you is something I truly admire about you.</p>
             </div>
             
              <!-- Card 4 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group" style="transition-delay: 300ms;">
-                <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-purple-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-indigo-400 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-mug-hot text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Your Humor</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">You always know how to make me laugh. There's never a dull moment when we're catching up.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Your Humor</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">You always know how to make me laugh. There's never a dull moment when we're catching up.</p>
             </div>
 
             <!-- Card 5 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group" style="transition-delay: 400ms;">
-                <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-pink-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-pink-400 group-hover:scale-110 transition-transform">
                     <i class="fa-regular fa-compass text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Your Style</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">You effortlessly pull off being elegant and cool at the same time. It's just inherently you.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Your Style</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">You effortlessly pull off being elegant and cool at the same time. It's just inherently you.</p>
             </div>
 
             <!-- Card 6 -->
             <div class="elegant-card p-8 rounded-2xl text-center reveal cursor-default group" style="transition-delay: 500ms;">
-                <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 bg-purple-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-5 text-pastel-accent dark:text-indigo-400 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-sparkles text-xl"></i>
                 </div>
-                <h3 class="text-xl font-serif text-gray-800 mb-3">Just Being You</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Honestly, I just appreciate you for being exactly who you are. Don't ever change.</p>
+                <h3 class="text-xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">Just Being You</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">Honestly, I just appreciate you for being exactly who you are. Don't ever change.</p>
             </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="py-20 relative z-10 px-6 max-w-3xl mx-auto" dir="ltr">
+        <div class="text-center mb-16 reveal">
+            <h2 class="text-3xl md:text-4xl font-serif text-gray-800 dark:text-white mb-4 transition-colors">Our Journey</h2>
+            <div class="w-16 h-1 bg-pastel-accent dark:bg-indigo-500 mx-auto rounded-full opacity-50 transition-colors"></div>
+        </div>
+        
+        <div class="relative border-l-2 border-gray-200 dark:border-gray-700 ml-4 md:ml-8">
+            
+            <!-- Memory 1 -->
+            <div class="mb-10 ml-8 reveal group relative">
+                <div class="timeline-dot absolute w-5 h-5 bg-gray-200 dark:bg-gray-600 rounded-full -left-[27px] top-5 border-4 border-white dark:border-gray-900"></div>
+                <div class="elegant-card p-6 rounded-2xl text-left">
+                    <span class="text-sm text-pastel-accent dark:text-pink-400 font-medium tracking-wide">February 2026</span>
+                    <h3 class="text-xl font-serif text-gray-800 dark:text-white mt-2 mb-2 transition-colors">The Beginning</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">
+                        The month everything beautiful started. The beginning of a story I hope never ends.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Memory 2 -->
+            <div class="ml-8 reveal group relative" style="transition-delay: 100ms;">
+                <div class="timeline-dot absolute w-5 h-5 bg-gray-200 dark:bg-gray-600 rounded-full -left-[27px] top-5 border-4 border-white dark:border-gray-900"></div>
+                <div class="elegant-card p-6 rounded-2xl text-left">
+                    <span class="text-sm text-pastel-accent dark:text-indigo-400 font-medium tracking-wide">The Future</span>
+                    <h3 class="text-xl font-serif text-gray-800 dark:text-white mt-2 mb-2 transition-colors">The Story Continues</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed transition-colors">
+                        Looking forward to making more memories with you, and seeing you smile always, because your smile lights up my world.
+                    </p>
+                </div>
+            </div>
+
         </div>
     </section>
 
     <!-- Letter Section -->
     <section class="py-24 relative z-10">
         <div class="max-w-3xl mx-auto px-6 text-center reveal">
-            <h2 class="text-2xl md:text-3xl font-serif text-gray-800 mb-3">A Little Note</h2>
-            <p class="text-gray-400 text-sm mb-12">(Tap the envelope to open)</p>
+            <h2 class="text-2xl md:text-3xl font-serif text-gray-800 dark:text-white mb-3 transition-colors">A Little Note</h2>
+            <p class="text-gray-400 dark:text-gray-500 text-sm mb-12">(Tap the envelope to open)</p>
             
             <div class="envelope-wrapper" onclick="toggleEnvelope(this)">
                 <div class="envelope">
                     <div class="envelope-flap"></div>
                     <div class="letter">
                         <div>
-                            <span class="block font-serif text-gray-800 text-lg mb-2">Dear Naren,</span>
-                            <span class="text-xs text-gray-500 leading-relaxed">I just wanted to take a moment to remind you how awesome you are. I hope this little surprise brightens your day. Have an amazing one! ✨</span>
+                            <span class="block font-serif text-gray-800 dark:text-white text-lg mb-2 transition-colors">Dear Naren,</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed transition-colors">I just wanted to take a moment to remind you how awesome you are. I hope this little surprise brightens your day. Have an amazing one! ✨</span>
                         </div>
                     </div>
                     <div class="envelope-pocket"></div>
@@ -277,12 +417,78 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-10 text-center text-gray-400 relative z-10">
-        <p class="text-sm font-light">Made with a smile for <span class="text-pastel-accent font-medium">Naren</span> &copy; 2026</p>
+    <footer class="py-10 text-center text-gray-400 dark:text-gray-600 relative z-10 transition-colors">
+        <p class="text-sm font-light">Made with a smile for <span class="text-pastel-accent dark:text-indigo-400 font-medium">Naren</span> &copy; 2026</p>
     </footer>
 
     <!-- Scripts -->
     <script>
+        // Night Mode Toggle
+        let isDarkMode = false;
+        
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            
+            if (isDarkMode) {
+                body.classList.add('dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                icon.classList.replace('text-indigo-500', 'text-yellow-400');
+                refreshShapes(); 
+            } else {
+                body.classList.remove('dark');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                icon.classList.replace('text-yellow-400', 'text-indigo-500');
+                refreshShapes(); 
+            }
+        }
+
+        // Music Toggle
+        let isPlaying = false;
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.5; 
+
+        function toggleMusic() {
+            const icon = document.getElementById('music-icon');
+            if (isPlaying) {
+                bgMusic.pause();
+                icon.classList.remove('fa-pause');
+                icon.classList.add('fa-music');
+                icon.parentElement.classList.remove('animate-pulse');
+            } else {
+                bgMusic.play().catch(error => {
+                    console.log("Audio playback failed:", error);
+                });
+                icon.classList.remove('fa-music');
+                icon.classList.add('fa-pause');
+                icon.parentElement.classList.add('animate-pulse'); 
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Love Counter (Since Feb 2026)
+        const startDate = new Date('2026-02-01T00:00:00').getTime();
+
+        function updateCounter() {
+            const now = new Date().getTime();
+            const distance = now - startDate;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days >= 0 ? days : 0;
+            document.getElementById("hours").innerText = hours >= 0 ? hours : 0;
+            document.getElementById("minutes").innerText = minutes >= 0 ? minutes : 0;
+            document.getElementById("seconds").innerText = seconds >= 0 ? seconds : 0;
+        }
+        setInterval(updateCounter, 1000);
+        updateCounter(); 
+
         // Envelope interaction
         function toggleEnvelope(el) {
             el.classList.toggle('open');
@@ -291,50 +497,70 @@
             }
         }
 
-        // Background floating soft shapes
+        // Background Shapes & Stars
+        let shapeInterval;
         function createFloatingShapes() {
             const container = document.getElementById('shapes-container');
             
-            setInterval(() => {
+            shapeInterval = setInterval(() => {
                 const shape = document.createElement('div');
                 shape.className = `shape`;
                 
-                // Randomize properties
-                const size = Math.random() * 150 + 50; // 50px to 200px
-                const left = Math.random() * 100; // 0% to 100%
-                const duration = Math.random() * 15 + 15; // 15s to 30s
+                const left = Math.random() * 100;
                 
-                shape.style.width = `${size}px`;
-                shape.style.height = `${size}px`;
-                shape.style.left = `${left}%`;
-                shape.style.animationDuration = `${duration}s`;
+                if (isDarkMode) {
+                    const size = Math.random() * 3 + 1; 
+                    const duration = Math.random() * 20 + 20; 
+                    shape.style.width = `${size}px`;
+                    shape.style.height = `${size}px`;
+                    shape.style.left = `${left}%`;
+                    shape.style.animationDuration = `${duration}s`;
+                } else {
+                    const size = Math.random() * 150 + 50;
+                    const duration = Math.random() * 15 + 15;
+                    shape.style.width = `${size}px`;
+                    shape.style.height = `${size}px`;
+                    shape.style.left = `${left}%`;
+                    shape.style.animationDuration = `${duration}s`;
+                }
                 
                 container.appendChild(shape);
                 
-                // Remove element after animation
                 setTimeout(() => {
-                    shape.remove();
-                }, duration * 1000);
+                    if (shape.parentNode) shape.remove();
+                }, parseFloat(shape.style.animationDuration) * 1000);
                 
-            }, 2000); // Create a new shape every 2 seconds
+            }, isDarkMode ? 500 : 2000); 
         }
 
-        // Initialize shapes
-        for(let i=0; i<5; i++) {
-            setTimeout(createFloatingShapes, i * 500);
+        function refreshShapes() {
+            const container = document.getElementById('shapes-container');
+            container.innerHTML = ''; 
+            clearInterval(shapeInterval);
+            createFloatingShapes();
         }
 
-        // Soft Confetti effect when opening envelope
+        refreshShapes(); 
+
+        // Hearts & Confetti
         function createConfetti() {
-            const colors = ['#f4d5d5', '#e6e6fa', '#d4a5a5', '#fff'];
-            for(let i=0; i<20; i++) {
+            const colors = isDarkMode ? ['#6366f1', '#e0e7ff', '#a5b4fc', '#fff'] : ['#f4d5d5', '#e6e6fa', '#d4a5a5', '#fff'];
+            for(let i=0; i<25; i++) {
                 setTimeout(() => {
                     let confetti = document.createElement('div');
                     confetti.style.position = 'absolute';
-                    confetti.style.width = '8px';
-                    confetti.style.height = '8px';
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    
+                    if(Math.random() > 0.7) {
+                        confetti.innerHTML = '❤️';
+                        confetti.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                        confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    } else {
+                        confetti.style.width = '8px';
+                        confetti.style.height = '8px';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    }
+                    
                     confetti.style.left = '50%';
                     confetti.style.top = '50%';
                     confetti.style.transform = `translate(-50%, -50%)`;
@@ -346,9 +572,9 @@
                     
                     setTimeout(() => {
                         const angle = Math.random() * Math.PI * 2;
-                        const velocity = Math.random() * 100 + 30;
+                        const velocity = Math.random() * 120 + 40;
                         const tx = Math.cos(angle) * velocity;
-                        const ty = Math.sin(angle) * velocity - 50; // slightly upward
+                        const ty = Math.sin(angle) * velocity - 60; 
                         
                         confetti.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random()*360}deg)`;
                         confetti.style.opacity = '0';
@@ -359,7 +585,7 @@
             }
         }
 
-        // Scroll Reveal Animation
+        // Scroll Reveal
         function reveal() {
             var reveals = document.querySelectorAll(".reveal");
             for (var i = 0; i < reveals.length; i++) {
@@ -372,11 +598,12 @@
             }
         }
         window.addEventListener("scroll", reveal);
-        reveal(); // Trigger on load
+        reveal(); 
     </script>
     <script data-goatcounter="https://naren.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
+
 
 
